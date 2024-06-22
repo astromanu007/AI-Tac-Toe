@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <div id="board"></div>
+    <div id="message"></div>
+    <script>
+        const boardElement = document.getElementById('board');
+        const messageElement = document.getElementById('message');
+        let board = [
+            [' ', ' ', ' '],
+            [' ', ' ', ' '],
+            [' ', ' ', ' ']
+        ];
+
+        function renderBoard() {
+            boardElement.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.innerHTML = board[i][j];
+                    cell.addEventListener('click', onCellClick);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function onCellClick(event) {
+            const row = event.target.dataset.row;
+            const col = event.target.dataset.col;
+            fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    board: board,
+                    row: parseInt(row),
+                    col: parseInt(col)
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    board = data.board;
+                    renderBoard();
+                    if (data.message) {
+                        messageElement.innerHTML = data.message;
+                    }
+                }
+            });
+        }
+
+        renderBoard();
+    </script>
+</body>
+</html>
